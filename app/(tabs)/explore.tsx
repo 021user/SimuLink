@@ -1,40 +1,105 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
-import * as DocumentPicker from 'expo-document-picker';
-import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Text, FlatList, TouchableOpacity, Alert, Platform, Linking } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import { io } from 'socket.io-client';
+import * as Notifications from 'expo-notifications';
 
 export default function ReceptionScreen() {
-    const [pdfs, setPdfs] = useState([]);
-    const navigation = useNavigation();
+    const [pdfList, setPdfList] = useState<string[]>([]);
+    const SERVER_IP = '172.20.175.181';
 
-    const pickDocument = async () => {
-        let result = await DocumentPicker.getDocumentAsync({
-            type: 'application/pdf',
+    // Configurer les notifications
+    useEffect(() => {
+        Notifications.setNotificationHandler({
+            handleNotification: async () => ({
+                shouldShowAlert: true,
+                shouldPlaySound: true,
+                shouldSetBadge: true,
+            }),
+        });
+    }, []);
+
+    // Connexion au WebSocket
+    useEffect(() => {
+        const socket = io(`http://${SERVER_IP}:5000`);
+
+        socket.on('pdf-received', async (data: { filename: string }) => {
+            console.log('Événement "pdf-received" reçu :', data.filename);
+
+            await Notifications.scheduleNotificationAsync({
+                content: {
+                    title: 'PDF Reçu',
+                    body: `Le PDF ${data.filename} vous a été envoyé`,
+                },
+                trigger: null,
+            });
+
+            fetchPDFList(); // Rafraîchir la liste des PDFs
         });
 
-        if (result.type === 'success') {
-            setPdfs([...pdfs, result]);
+        return () => {
+            socket.disconnect();
+        };
+    }, []);
+
+    // Récupérer la liste des PDFs
+    const fetchPDFList = async () => {
+        try {
+            const response = await fetch(`http://${SERVER_IP}:5000/list-pdfs`);
+            const data = await response.json();
+            if (response.ok) {
+                setPdfList(data);
+            } else {
+                console.error('Erreur lors de la récupération des PDFs');
+            }
+        } catch (error) {
+            console.error('Erreur lors de la récupération des PDFs', error);
         }
     };
 
-    const openPdf = (uri) => {
-        navigation.navigate('PdfViewer', { uri });
+    // Ouvrir un PDF
+    const handlePDFPress = (item: string) => {
+        const pdfUrl = `http://${SERVER_IP}:5000/pdfs/${item}`;
+        Linking.openURL(pdfUrl).catch((err) => {
+            console.error("Erreur lors de l'ouverture du PDF", err);
+            Alert.alert("Erreur", "Impossible d'ouvrir le PDF");
+        });
     };
+
+    // Charger la liste des PDFs au montage du composant
+    useEffect(() => {
+        fetchPDFList();
+    }, []);
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Réception des PDFs</Text>
-            <TouchableOpacity style={styles.button} onPress={pickDocument}>
-                <Text style={styles.buttonText}>Sélectionner un PDF</Text>
-            </TouchableOpacity>
+            <View style={styles.header}>
+                <Text style={styles.title}>Réception des PDFs</Text>
+                <MaterialIcons name="cloud-download" size={24} color="#fff" />
+            </View>
+
             <FlatList
-                data={pdfs}
-                keyExtractor={(item, index) => index.toString()}
+                data={pdfList}
+                keyExtractor={(item) => item}
+                contentContainerStyle={styles.listContent}
+                ListEmptyComponent={
+                    <View style={styles.emptyContainer}>
+                        <MaterialIcons name="folder-open" size={50} color="#7a7a7a" />
+                        <Text style={styles.emptyText}>Aucun PDF reçu</Text>
+                    </View>
+                }
                 renderItem={({ item }) => (
-                    <TouchableOpacity style={styles.pdfItem} onPress={() => openPdf(item.uri)}>
-                        <Text>{item.name}</Text>
+                    <TouchableOpacity
+                        style={styles.pdfCard}
+                        onPress={() => handlePDFPress(item)}
+                        activeOpacity={0.7}
+                    >
+                        <MaterialIcons name="picture-as-pdf" size={24} color="#e74c3c" />
+                        <Text style={styles.pdfName} numberOfLines={1}>{item}</Text>
+                        <MaterialIcons name="chevron-right" size={24} color="#95a5a6" />
                     </TouchableOpacity>
                 )}
+                ItemSeparatorComponent={() => <View style={styles.separator} />}
             />
         </View>
     );
@@ -43,30 +108,73 @@ export default function ReceptionScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20,
-        backgroundColor: '#F5F5F5',
+        backgroundColor: '#f8f9fa',
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#2c3e50',
+        paddingVertical: 20,
+        paddingHorizontal: 15,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 4,
+            },
+            android: {
+                elevation: 5,
+            },
+        }),
     },
     title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        textAlign: 'center',
-    },
-    button: {
-        backgroundColor: '#007BFF',
-        padding: 10,
-        borderRadius: 5,
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    buttonText: {
+        fontSize: 22,
+        fontWeight: '600',
         color: '#fff',
-        fontWeight: 'bold',
+        marginRight: 10,
     },
-    pdfItem: {
-        padding: 10,
-        marginVertical: 5,
-        backgroundColor: '#E0E0E0',
-        borderRadius: 5,
+    listContent: {
+        paddingHorizontal: 15,
+        paddingVertical: 20,
+    },
+    pdfCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        padding: 15,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.1,
+                shadowRadius: 3,
+            },
+            android: {
+                elevation: 3,
+            },
+        }),
+    },
+    pdfName: {
+        flex: 1,
+        fontSize: 16,
+        color: '#34495e',
+        marginLeft: 15,
+    },
+    separator: {
+        height: 12,
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: 50,
+    },
+    emptyText: {
+        fontSize: 16,
+        color: '#95a5a6',
+        marginTop: 15,
     },
 });
