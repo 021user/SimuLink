@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="fad9170e-658d-47bf-886a-e03bf982b7eb" name="Changes" comment="Feature : ajout de la detections des adresses IP, générations des pdf, button d'envoi To-Fix : le button d'envoi, séparer la page réception et envoi" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JavaScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/SimuLink" />
+  </component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/021user/SimuLink.git",
+    "accountId": "6762e67d-b414-490f-8db6-a905c1ea78c5"
+  }
+}]]></component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "customColor": "",
+  "associatedIndex": 4
+}]]></component>
+  <component name="ProjectId" id="2tUTAuj0tvGlCOCB7q086DjL8Ei" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "dart.analysis.tool.window.visible": "false",
+    "git-widget-placeholder": "master",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "ts.external.directory.path": "C:\\Users\\iyadg\\Desktop\\Projet ilumens\\SimuLink\\SimuLink\\node_modules\\typescript\\lib",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\iyadg\Desktop\Projet ilumens\SimuLink\backend" />
+      <recent name="C:\Users\iyadg\Desktop\Projet ilumens\SimuLink" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-e768b9ed790e-JavaScript-WS-243.21565.180" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="fad9170e-658d-47bf-886a-e03bf982b7eb" name="Changes" comment="" />
+      <created>1740405514441</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1740405514441</updated>
+      <workItem from="1740405515690" duration="4447000" />
+    </task>
+    <task id="LOCAL-00001" summary="Feature : Ajout du">
+      <option name="closed" value="true" />
+      <created>1740410175517</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1740410175517</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Feature : ajout de la detections des adresses IP, générations des pdf, button d'envoi To-Fix : le button d'envoi, séparer la page réception et envoi">
+      <option name="closed" value="true" />
+      <created>1740410314618</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1740410314618</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Feature : ajout de la detections des adresses IP, générations des pdf, button d'envoi To-Fix : le button d'envoi, séparer la page réception et envoi">
+      <option name="closed" value="true" />
+      <created>1740410400711</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1740410400711</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Feature : Ajout du" />
+    <MESSAGE value="Feature : ajout de la detections des adresses IP, générations des pdf, button d'envoi To-Fix : le button d'envoi, séparer la page réception et envoi" />
+    <option name="LAST_COMMIT_MESSAGE" value="Feature : ajout de la detections des adresses IP, générations des pdf, button d'envoi To-Fix : le button d'envoi, séparer la page réception et envoi" />
+  </component>
+</project>
