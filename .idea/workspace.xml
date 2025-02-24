@@ -50,7 +50,7 @@
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "master",
+    "git-widget-placeholder": "main",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -81,7 +81,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1740405514441</updated>
-      <workItem from="1740405515690" duration="4757000" />
+      <workItem from="1740405515690" duration="5050000" />
     </task>
     <task id="LOCAL-00001" summary="Feature : Ajout du">
       <option name="closed" value="true" />
