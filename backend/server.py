@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, make_response
 from flask_cors import CORS
 from flask_socketio import SocketIO
 import os
@@ -89,37 +89,31 @@ def generate_pdf():
     pdf_filename = f"{file_name}_{safe_date}.pdf"
     pdf_path     = os.path.join(folder_path, pdf_filename)
 
-    # Génération du PDF complet
     pdf = fpdf.FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
 
-    # Logos
     if os.path.exists("logo2.png"):
         pdf.image("logo2.png", x=10, y=10, w=30)
     if os.path.exists("logo.png"):
         pdf.image("logo.png",  x=170, y=10, w=30)
     pdf.set_y(50)
 
-    # En-tête
     pdf.set_font("Arial","B",14)
     pdf.cell(190,6,"CENTRE HOSPITALO-UNIVERSITAIRE ILUMENS",0,1,"C")
     pdf.cell(190,6,"SERVICE DE BIOCHIMIE",0,1,"C")
 
-    # Infos patient
     pdf.ln(5)
     pdf.set_font("Arial","",12)
     pdf.cell(100,6,f"Nom : {display_name}",0,0,"L")
     pdf.cell(90,6,f"Date : {date_rapport}",0,1,"R")
     pdf.cell(190,6,"Numéro : 30282",0,1,"R")
 
-    # Séparateur
     pdf.ln(3)
     pdf.set_draw_color(0,0,0); pdf.set_line_width(0.5)
     y = pdf.get_y(); pdf.line(10,y,200,y)
     pdf.ln(5)
 
-    # Tableau des analyses
     pdf.set_font("Arial","B",12)
     pdf.cell(190,8,"RÉSULTATS D'ANALYSES",0,1,"C")
     pdf.ln(2)
@@ -155,7 +149,6 @@ def generate_pdf():
         pdf.cell(col_w[3],8,norme, 1,1,"C",fill)
         fill = not fill
 
-    # Interprétation
     pdf.set_text_color(0,0,0)
     pdf.ln(5)
     pdf.set_font("Arial","B",12)
@@ -166,7 +159,6 @@ def generate_pdf():
     else:
         pdf.cell(190,6,"Aucune interprétation fournie.",0,1)
 
-    # Note & signature
     pdf.ln(10)
     pdf.set_font("Arial","I",9)
     pdf.multi_cell(190,6,
@@ -177,15 +169,12 @@ def generate_pdf():
     pdf.ln(5)
     pdf.cell(190,6,"Signature",0,1,"R")
 
-    # Sauvegarde
     pdf.output(pdf_path)
 
-    # Gère le flag de publication
     pm = load_publish_map(folder_path)
     pm[pdf_filename] = publish
     save_publish_map(folder_path, pm)
 
-    # Notif Socket.IO
     socketio.emit("new-pdf", {
         "patient_folder": patient_folder,
         "filename": pdf_filename,
@@ -194,13 +183,20 @@ def generate_pdf():
 
     return jsonify(message="PDF généré avec succès", pdf_filename=pdf_filename)
 
-@app.route("/publish-pdf", methods=["POST"])
-def publish_pdf():
-    data     = request.json or {}
-    folder   = data.get("patient_folder","")
-    filename = data.get("filename","")
-    publish  = bool(data.get("publish", False))
-    path     = os.path.join(BASE_DIR, folder)
+@app.route("/set-publish", methods=["POST", "OPTIONS"])
+def set_publish():
+    if request.method == "OPTIONS":
+        response = make_response()
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+        response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
+        return response
+
+    data = request.json or {}
+    folder = data.get("patient_folder", "")
+    filename = data.get("filename", "")
+    publish = bool(data.get("publish", False))
+    path = os.path.join(BASE_DIR, folder)
     if not os.path.isdir(path):
         return jsonify(error="Dossier introuvable"), 404
     pm = load_publish_map(path)
