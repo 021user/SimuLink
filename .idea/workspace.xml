@@ -5,11 +5,30 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fad9170e-658d-47bf-886a-e03bf982b7eb" name="Changes" comment="Feature : ajout de la detections des adresses IP, générations des pdf, button d'envoi To-Fix : le button d'envoi, séparer la page réception et envoi">
+      <change afterPath="$PROJECT_DIR$/backend/logo.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/logo2.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase_[Changes]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase_[Changes]1/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase_[Changes]2/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase_[Changes]3/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase_[Changes]4/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase__Changes_.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase__Changes_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase__Changes_2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase__Changes_3.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase__Changes_4.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/(tabs)/explore.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(tabs)/explore.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/(tabs)/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(tabs)/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/dossierpatient/test/Test1_2025-03-01.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/dossierpatient/test/test2_2025-03-01.pdf" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/server.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/-.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/sqdqsdqs-.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/yug-.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/yuguyg-.pdf" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,7 +72,7 @@
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/021user/SimuLink.git&quot;,
-    &quot;accountId&quot;: &quot;6762e67d-b414-490f-8db6-a905c1ea78c5&quot;
+    &quot;accountId&quot;: &quot;b827f380-b019-4d1b-a235-1ed1885bbad9&quot;
   }
 }</component>
   <component name="ProjectColorInfo">{
@@ -71,17 +90,21 @@
     "RunOnceActivity.git.unshallow": "true",
     "dart.analysis.tool.window.visible": "false",
     "git-widget-placeholder": "VersionFinal",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Users/espid/Desktop/SimuLink",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "ts.external.directory.path": "C:\\Users\\iyadg\\WebstormProjects\\SimuLink\\node_modules\\typescript\\lib",
+    "settings.editor.selected.configurable": "settings.nodejs",
+    "ts.external.directory.path": "C:\\Users\\espid\\Desktop\\SimuLink\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\iyadg\WebstormProjects\SimuLink\backend" />
       <recent name="C:\Users\iyadg\WebstormProjects\SimuLink\SimuLink" />
       <recent name="C:\Users\iyadg\Desktop\Projet ilumens\SimuLink\backend" />
       <recent name="C:\Users\iyadg\Desktop\Projet ilumens\SimuLink" />
@@ -90,7 +113,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-e768b9ed790e-JavaScript-WS-243.21565.180" />
+        <option value="bundled-js-predefined-d6986cc7102b-f27c65a3e318-JavaScript-WS-251.23774.424" />
       </set>
     </attachedChunks>
   </component>
@@ -105,6 +128,9 @@
       <workItem from="1740405515690" duration="5050000" />
       <workItem from="1740577518116" duration="918000" />
       <workItem from="1743499697384" duration="600000" />
+      <workItem from="1745760072968" duration="2876000" />
+      <workItem from="1746618575865" duration="169000" />
+      <workItem from="1746618754123" duration="4396000" />
     </task>
     <task id="LOCAL-00001" summary="Feature : Ajout du">
       <option name="closed" value="true" />

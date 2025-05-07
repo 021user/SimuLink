@@ -7,137 +7,154 @@ import {
     FlatList,
     TouchableOpacity,
     StyleSheet,
-    ScrollView
+    ScrollView,
+    Switch
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { io } from 'socket.io-client';
 
-const SERVER_IP = '172.20.175.181';
+const SERVER_IP = '172.20.10.2';
 
 const templates = {
-    "NFS": [
-        { name: "Leucocytes", unit: "", value: "", reference: "4,00-10,00" },
-        { name: "Hémoglobines", unit: "", value: "", reference: "11,5-16,0" },
-        { name: "Hématocrites", unit: "", value: "", reference: "30,0-47,0" },
-        { name: "VGM", unit: "", value: "", reference: "80-100" },
-        { name: "Plaquette", unit: "", value: "", reference: "150-400" },
+    NFS: [
+        { name: 'Leucocytes', unit: '', value: '', reference: '4,00-10,00' },
+        { name: 'Hémoglobines', unit: '', value: '', reference: '11,5-16,0' },
+        { name: 'Hématocrites', unit: '', value: '', reference: '30,0-47,0' },
+        { name: 'VGM', unit: '', value: '', reference: '80-100' },
+        { name: 'Plaquette', unit: '', value: '', reference: '150-400' },
     ],
-    "Ionogramme sanguin": [
-        { name: "NA", unit: "mmol/L", value: "", reference: "137-143" },
-        { name: "K", unit: "mmol/L", value: "", reference: "3,5-4,5" },
-        { name: "Cl", unit: "mmol/L", value: "", reference: "97-105" },
-        { name: "Bicarbonates", unit: "mmol/L", value: "", reference: "23-30" },
-        { name: "Protides", unit: "g/L", value: "", reference: "65-75" },
-        { name: "Urée", unit: "mmol/L", value: "", reference: "3-7" },
-        { name: "Creatinine", unit: "mg/L", value: "", reference: "40-120" },
+    'Ionogramme sanguin': [
+        { name: 'NA', unit: 'mmol/L', value: '', reference: '137-143' },
+        { name: 'K', unit: 'mmol/L', value: '', reference: '3,5-4,5' },
+        { name: 'Cl', unit: 'mmol/L', value: '', reference: '97-105' },
+        { name: 'Bicarbonates', unit: 'mmol/L', value: '', reference: '23-30' },
+        { name: 'Protides', unit: 'g/L', value: '', reference: '65-75' },
+        { name: 'Urée', unit: 'mmol/L', value: '', reference: '3-7' },
+        { name: 'Creatinine', unit: 'mg/L', value: '', reference: '40-120' },
     ],
-    "Bilan hépatique": [
-        { name: "ASAT", unit: "UI", value: "", reference: "<35" },
-        { name: "ALAT", unit: "UI", value: "", reference: "<33" },
-        { name: "GGT", unit: "UI", value: "", reference: "<20" },
-        { name: "PAL", unit: "UI", value: "", reference: "<140" },
+    'Bilan hépatique': [
+        { name: 'ASAT', unit: 'UI', value: '', reference: '<35' },
+        { name: 'ALAT', unit: 'UI', value: '', reference: '<33' },
+        { name: 'GGT', unit: 'UI', value: '', reference: '<20' },
+        { name: 'PAL', unit: 'UI', value: '', reference: '<140' },
     ],
-    "Hémostase": [
-        { name: "TP", unit: "%", value: "", reference: "normal" },
-        { name: "TCA", unit: "", value: "", reference: "0.8-1.2" },
-        { name: "Fibrinogène", unit: "g", value: "", reference: "2-4" },
+    Hémostase: [
+        { name: 'TP', unit: '%', value: '', reference: 'normal' },
+        { name: 'TCA', unit: '', value: '', reference: '0.8-1.2' },
+        { name: 'Fibrinogène', unit: 'g', value: '', reference: '2-4' },
     ],
-    "GAZ du sang": [
-        { name: "pH", unit: "", value: "", reference: "normal" },
-        { name: "PaO2", unit: "mg/mHg", value: "", reference: "90-100" },
-        { name: "PaCO2", unit: "mg/mHg", value: "", reference: "35-45" },
-        { name: "CO2 total", unit: "mmol/L", value: "", reference: "20-35" },
-        { name: "Bicarbonates", unit: "mmol/L", value: "", reference: "22-26" },
-        { name: "pH", unit: "%", value: "", reference: "95-100" },
-    ]
+    'GAZ du sang': [
+        { name: 'pH', unit: '', value: '', reference: 'normal' },
+        { name: 'PaO2', unit: 'mg/mHg', value: '', reference: '90-100' },
+        { name: 'PaCO2', unit: 'mg/mHg', value: '', reference: '35-45' },
+        { name: 'CO2 total', unit: 'mmol/L', value: '', reference: '20-35' },
+        { name: 'Bicarbonates', unit: 'mmol/L', value: '', reference: '22-26' },
+        { name: 'pH', unit: '%', value: '', reference: '95-100' },
+    ],
 };
 
 export default function PatientFolderScreen() {
-    const [patientFolders, setPatientFolders] = useState([]);
+    const [patientFolders, setPatientFolders] = useState<string[]>([]);
     const [newFolderName, setNewFolderName] = useState('');
     const [selectedFolder, setSelectedFolder] = useState('');
-    const [pdfList, setPdfList] = useState([]);
-    const [socket, setSocket] = useState(null);
+    const [pdfList, setPdfList] = useState<string[]>([]);
+    const [socket, setSocket] = useState<any>(null);
 
-    // Champs pour le rapport
     const [reportName, setReportName] = useState('');
     const [reportDate, setReportDate] = useState('');
-    // Champs pour ajout manuel d'une analyse
     const [analysisName, setAnalysisName] = useState('');
     const [analysisUnit, setAnalysisUnit] = useState('');
     const [analysisValue, setAnalysisValue] = useState('');
-    // Liste des analyses (template ou ajout manuel)
-    const [analysesList, setAnalysesList] = useState([]);
-    // Sélection du template
+    const [analysesList, setAnalysesList] = useState<any[]>([]);
     const [selectedTemplate, setSelectedTemplate] = useState('');
+    const [publishToReception, setPublishToReception] = useState(true);
+
+    // fichier → publié ?
+    const [pdfVisibility, setPdfVisibility] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
-        const newSocket = io(`http://${SERVER_IP}:5000`);
-        setSocket(newSocket);
-        newSocket.on('new-pdf', fetchPDFList);
+        const s = io(`http://${SERVER_IP}:5000`);
+        setSocket(s);
+        s.on('new-pdf', fetchPDFList);
         fetchPatientFolders();
-        return () => newSocket.close();
+        return () => s.disconnect();
     }, []);
 
     useEffect(() => {
-        if (selectedFolder) {
-            fetchPDFList();
-        }
+        if (selectedFolder) fetchPDFList();
     }, [selectedFolder]);
 
-    const fetchPatientFolders = async () => {
+    async function fetchPatientFolders() {
         try {
-            const response = await fetch(`http://${SERVER_IP}:5000/list-patient-folders`);
-            const data = await response.json();
-            if (response.ok) setPatientFolders(data);
-        } catch (error) {
-            console.error('Erreur lors de la récupération des dossiers', error);
+            const res = await fetch(`http://${SERVER_IP}:5000/list-patient-folders`);
+            const js: string[] = await res.json();
+            if (res.ok) setPatientFolders(js);
+        } catch (e) {
+            console.error(e);
         }
-    };
+    }
 
-    const addPatientFolder = async () => {
+    async function fetchPDFList() {
+        if (!selectedFolder) return;
+        try {
+            // tous les PDFs
+            const allR = await fetch(
+                `http://${SERVER_IP}:5000/list-pdfs-in-folder/${selectedFolder}`
+            );
+            const all: string[] = await allR.json();
+            // seulement publiés
+            const pubR = await fetch(
+                `http://${SERVER_IP}:5000/list-pdfs-in-folder/${selectedFolder}?published=true`
+            );
+            const pub: string[] = await pubR.json();
+
+            if (allR.ok && pubR.ok) {
+                setPdfList(all);
+                const vis: Record<string, boolean> = {};
+                all.forEach(f => (vis[f] = pub.includes(f)));
+                setPdfVisibility(vis);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    async function addPatientFolder() {
         if (!newFolderName.trim()) {
-            Alert.alert('Erreur', 'Veuillez entrer un nom valide');
-            return;
+            return Alert.alert('Erreur', 'Veuillez entrer un nom valide');
         }
         try {
-            const response = await fetch(`http://${SERVER_IP}:5000/create-patient-folder`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ folder_name: newFolderName.trim() }),
-            });
-            const data = await response.json();
-            if (response.ok) {
+            const res = await fetch(
+                `http://${SERVER_IP}:5000/create-patient-folder`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ folder_name: newFolderName.trim() }),
+                }
+            );
+            const js = await res.json();
+            if (res.ok) {
                 setPatientFolders([...patientFolders, newFolderName.trim()]);
                 setNewFolderName('');
-                Alert.alert('Succès', data.message);
+                Alert.alert('Succès', js.message);
             }
-        } catch (error) {
+        } catch {
             Alert.alert('Erreur', 'Échec de la création du dossier');
         }
-    };
+    }
 
-    const fetchPDFList = async () => {
-        try {
-            const response = await fetch(`http://${SERVER_IP}:5000/list-pdfs-in-folder/${selectedFolder}`);
-            const data = await response.json();
-            if (response.ok) setPdfList(data);
-        } catch (error) {
-            console.error('Erreur lors de la récupération des PDFs', error);
-        }
-    };
-
-    const generateReportInFolder = async () => {
+    async function generateReportInFolder() {
         if (!selectedFolder) {
-            Alert.alert('Erreur', 'Veuillez sélectionner un dossier patient');
-            return;
+            return Alert.alert('Erreur', 'Veuillez sélectionner un dossier patient');
         }
         if (!reportName || !reportDate || analysesList.length === 0) {
-            Alert.alert('Erreur', 'Veuillez remplir tous les champs et ajouter au moins une analyse');
-            return;
+            return Alert.alert(
+                'Erreur',
+                'Veuillez remplir tous les champs et ajouter au moins une analyse'
+            );
         }
         try {
-            const response = await fetch(`http://${SERVER_IP}:5000/generate-pdf`, {
+            const res = await fetch(`http://${SERVER_IP}:5000/generate-pdf`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -145,12 +162,14 @@ export default function PatientFolderScreen() {
                     date: reportDate,
                     analyses: analysesList,
                     patient_folder: selectedFolder,
+                    publish: publishToReception,
                 }),
             });
-            const data = await response.json();
-            if (response.ok) {
-                Alert.alert('Succès', 'Le rapport a été généré et assigné au dossier');
+            const js = await res.json();
+            if (res.ok) {
+                Alert.alert('Succès', 'Le rapport a été généré');
                 fetchPDFList();
+                // reset
                 setReportName('');
                 setReportDate('');
                 setAnalysisName('');
@@ -158,40 +177,65 @@ export default function PatientFolderScreen() {
                 setAnalysisValue('');
                 setAnalysesList([]);
             }
-        } catch (error) {
+        } catch {
             Alert.alert('Erreur', 'Échec de la génération du rapport');
         }
-    };
+    }
 
-    const addAnalysis = () => {
+    function addAnalysis() {
         if (!analysisName || !analysisUnit || !analysisValue) {
-            return Alert.alert('Erreur', 'Veuillez remplir tous les champs de l\'analyse');
+            return Alert.alert('Erreur', 'Veuillez remplir tous les champs de l’analyse');
         }
-        setAnalysesList([...analysesList, { name: analysisName, unit: analysisUnit, value: analysisValue, reference: 'N/A' }]);
+        setAnalysesList([
+            ...analysesList,
+            { name: analysisName, unit: analysisUnit, value: analysisValue, reference: 'N/A' },
+        ]);
         setAnalysisName('');
         setAnalysisUnit('');
         setAnalysisValue('');
-    };
+    }
 
-    const removeAnalysis = (index) => {
-        const updatedAnalyses = analysesList.filter((_, i) => i !== index);
-        setAnalysesList(updatedAnalyses);
-    };
+    function removeAnalysis(i: number) {
+        setAnalysesList(analysesList.filter((_, idx) => idx !== i));
+    }
 
-    const applyTemplate = (templateName) => {
-        setSelectedTemplate(templateName);
-        if (templates[templateName]) {
-            const items = templates[templateName].map(item => ({
+    function applyTemplate(name: string) {
+        setSelectedTemplate(name);
+        if (templates[name]) {
+            setAnalysesList(templates[name].map(item => ({
                 name: item.name,
-                unit: item.unit || '',
-                value: item.value || '',
-                reference: item.reference || 'normal'
-            }));
-            setAnalysesList(items);
+                unit: item.unit,
+                value: item.value,
+                reference: item.reference,
+            })));
         } else {
             setAnalysesList([]);
         }
+    }
+
+    const togglePdfVisibility = async (file: string) => {
+        const next = !pdfVisibility[file];
+        // 1) mise à jour locale
+        setPdfVisibility(prev => ({ ...prev, [file]: next }));
+        // 2) appel au serveur
+        try {
+            const res = await fetch(`http://${SERVER_IP}:5000/set-publish`, {
+                method: 'POST',
+                headers: { 'Content-Type':'application/json' },
+                body: JSON.stringify({
+                    patient_folder: selectedFolder,
+                    filename: file,
+                    publish: next
+                })
+            });
+            if (!res.ok) throw new Error();
+        } catch {
+            Alert.alert('Erreur', 'Impossible de mettre à jour la publication');
+            // rollback local
+            setPdfVisibility(prev => ({ ...prev, [file]: !next }));
+        }
     };
+
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
@@ -212,13 +256,17 @@ export default function PatientFolderScreen() {
                 </TouchableOpacity>
             </View>
 
+            {/* Liste dossiers */}
             <FlatList
                 data={patientFolders}
-                keyExtractor={(item, index) => index.toString()}
+                keyExtractor={(_, i) => i.toString()}
                 renderItem={({ item }) => (
                     <TouchableOpacity
                         onPress={() => setSelectedFolder(item)}
-                        style={[styles.folderItem, selectedFolder === item && styles.selectedFolder]}
+                        style={[
+                            styles.folderItem,
+                            selectedFolder === item && styles.selectedFolder
+                        ]}
                     >
                         <Text style={styles.folderText}>{item}</Text>
                     </TouchableOpacity>
@@ -249,7 +297,7 @@ export default function PatientFolderScreen() {
             <View style={styles.pickerContainer}>
                 <Picker
                     selectedValue={selectedTemplate}
-                    onValueChange={(itemValue) => applyTemplate(itemValue)}
+                    onValueChange={applyTemplate}
                     style={styles.picker}
                 >
                     <Picker.Item label="Sélectionner un template" value="" />
@@ -259,7 +307,7 @@ export default function PatientFolderScreen() {
                 </Picker>
             </View>
 
-            {/* Ajout / Modification d'analyse */}
+            {/* Ajout d’analyse */}
             <Text style={styles.sectionTitle}>Ajouter / Modifier une Analyse</Text>
             <View style={styles.analysesContainer}>
                 <TextInput
@@ -289,191 +337,132 @@ export default function PatientFolderScreen() {
                 </TouchableOpacity>
             </View>
 
-            {/* Liste des analyses */}
-            <View style={styles.analysesList}>
-                {analysesList.map((item, index) => (
-                    <View key={index} style={styles.analysisRow}>
-                        <View style={styles.analysisColumn}>
-                            <Text style={styles.analysisLabel}>
-                                {item.name} ({item.unit})
-                            </Text>
-                            {item.reference && (
-                                <Text style={styles.normalLabel}>Norme : {item.reference}</Text>
-                            )}
-                        </View>
-                        <TextInput
-                            style={styles.analysisInput}
-                            placeholder="Saisir la valeur"
-                            value={item.value}
-                            editable={true}
-                            keyboardType="numeric"
-                            onChangeText={(newVal) => {
-                                const newList = [...analysesList];
-                                newList[index].value = newVal;
-                                setAnalysesList(newList);
-                            }}
-                            placeholderTextColor="#999"
-                        />
-                        <TouchableOpacity onPress={() => removeAnalysis(index)} style={styles.removeButton}>
-                            <Text style={styles.buttonText}>Supprimer</Text>
-                        </TouchableOpacity>
+            {analysesList.map((item, idx) => (
+                <View key={idx} style={styles.analysisRow}>
+                    <View style={styles.analysisColumn}>
+                        <Text style={styles.analysisLabel}>
+                            {item.name} ({item.unit})
+                        </Text>
+                        <Text style={styles.normalLabel}>Norme : {item.reference}</Text>
                     </View>
-                ))}
+                    <TextInput
+                        style={styles.analysisInput}
+                        value={item.value}
+                        onChangeText={v => {
+                            const c = [...analysesList]; c[idx].value = v; setAnalysesList(c);
+                        }}
+                        keyboardType="numeric"
+                        placeholder="Valeur"
+                        placeholderTextColor="#999"
+                    />
+                    <TouchableOpacity onPress={() => removeAnalysis(idx)} style={styles.removeButton}>
+                        <Text style={styles.buttonText}>Suppr</Text>
+                    </TouchableOpacity>
+                </View>
+            ))}
+
+            {/* Publier toggle */}
+            <View style={styles.toggleContainer}>
+                <Text style={styles.toggleLabel}>Publier en Réception</Text>
+                <Switch
+                    value={publishToReception}
+                    onValueChange={setPublishToReception}
+                    trackColor={{ true: '#4caf50', false: '#ccc' }}
+                    thumbColor="#fff"
+                />
             </View>
 
             <TouchableOpacity onPress={generateReportInFolder} style={styles.button}>
                 <Text style={styles.buttonText}>Générer le rapport</Text>
             </TouchableOpacity>
 
-            <Text style={styles.sectionTitle}>PDFs dans {selectedFolder || '...'}</Text>
-            <FlatList
-                data={pdfList}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item }) => <Text style={styles.pdfItem}>{item}</Text>}
-                ListEmptyComponent={<Text style={styles.emptyText}>Aucun PDF.</Text>}
-            />
+            {/* Liste des PDFs */}
+            <Text style={styles.sectionTitle}>PDFs dans {selectedFolder || '…'}</Text>
+            {pdfList.length === 0 ? (
+                <Text style={styles.emptyText}>Aucun PDF.</Text>
+            ) : (
+                pdfList.map(file => (
+                    <View key={file} style={styles.pdfRow}>
+                        <Text style={styles.pdfName}>{file}</Text>
+                        <Switch
+                            value={!!pdfVisibility[file]}
+                            onValueChange={() => togglePdfVisibility(file)}
+                            trackColor={{ true: '#4caf50', false: '#ccc' }}
+                            thumbColor="#fff"
+                        />
+                        <Text style={styles.pdfLabel}>
+                            affiché {pdfVisibility[file] ? 'oui' : 'non'}
+                        </Text>
+                    </View>
+                ))
+            )}
         </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flexGrow: 1,
-        padding: 20,
-        backgroundColor: '#f2f6fa',
-    },
-    header: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        textAlign: 'center',
-        color: '#333',
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        marginBottom: 10,
-        color: '#005ea2',
-    },
-    inputContainer: {
-        marginBottom: 15,
-    },
+    container: { flexGrow: 1, padding: 20, backgroundColor: '#f2f6fa' },
+    header: { fontSize: 22, fontWeight: 'bold', color: '#333', textAlign: 'center', marginBottom: 20 },
+    sectionTitle: { fontSize: 18, fontWeight: '600', color: '#005ea2', marginTop: 20, marginBottom: 10 },
+    inputContainer: { marginBottom: 15 },
     input: {
-        height: 48,
-        borderColor: '#cfd8dc',
-        borderWidth: 1,
-        borderRadius: 10,
-        paddingLeft: 15,
-        backgroundColor: '#fff',
-        marginBottom: 10,
-        fontSize: 16,
-        color: '#333',
-    },
-    button: {
-        backgroundColor: '#005ea2',
-        paddingVertical: 14,
-        borderRadius: 10,
-        alignItems: 'center',
-        marginVertical: 5,
-    },
-    buttonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    folderItem: {
-        padding: 15,
-        borderWidth: 1,
-        borderColor: '#cfd8dc',
-        marginBottom: 8,
-        borderRadius: 10,
-        backgroundColor: '#fff',
-    },
-    selectedFolder: {
-        borderColor: '#005ea2',
-        backgroundColor: '#e1f5fe',
-    },
-    folderText: {
-        fontSize: 16,
-        color: '#333',
-    },
-    pdfItem: {
-        padding: 10,
-        fontSize: 14,
-        color: '#555',
-    },
-    emptyText: {
-        fontSize: 14,
-        color: '#999',
-        textAlign: 'center',
-        marginVertical: 10,
+        height: 48, borderWidth: 1, borderColor: '#cfd8dc',
+        borderRadius: 10, paddingHorizontal: 15,
+        backgroundColor: '#fff', marginBottom: 10,
+        fontSize: 16, color: '#333'
     },
     pickerContainer: {
-        backgroundColor: '#fff',
-        borderColor: '#cfd8dc',
-        borderWidth: 1,
-        borderRadius: 10,
-        marginBottom: 15,
-        overflow: 'hidden',
+        backgroundColor: '#fff', borderWidth: 1,
+        borderColor: '#cfd8dc', borderRadius: 10,
+        marginBottom: 15, overflow: 'hidden'
     },
-    picker: {
-        height: 48,
-        width: '100%',
+    picker: { height: 48, width: '100%' },
+    analysesContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 15 },
+    smallInput: { width: '30%', marginRight: 5 },
+    smallButton: { paddingHorizontal: 12, marginTop: 5 },
+    button: {
+        backgroundColor: '#005ea2', paddingVertical: 14,
+        borderRadius: 10, alignItems: 'center', marginVertical: 5
     },
-    analysesContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 15,
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
+    buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+    folderItem: {
+        padding: 15, borderWidth: 1, borderColor: '#cfd8dc',
+        borderRadius: 10, backgroundColor: '#fff', marginBottom: 8
     },
-    smallInput: {
-        width: '30%',
-        marginRight: 5,
-    },
-    smallButton: {
-        paddingHorizontal: 12,
-        marginTop: 5,
-    },
-    analysesList: {
-        marginBottom: 20,
-    },
+    selectedFolder: { borderColor: '#005ea2', backgroundColor: '#e1f5fe' },
+    folderText: { fontSize: 16, color: '#333' },
     analysisRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 10,
-        backgroundColor: '#fff',
-        padding: 12,
-        borderRadius: 10,
-        elevation: 2,
+        flexDirection: 'row', alignItems: 'center',
+        backgroundColor: '#fff', padding: 12,
+        borderRadius: 10, elevation: 2, marginBottom: 10
     },
-    analysisColumn: {
-        flex: 1,
-    },
-    analysisLabel: {
-        fontSize: 15,
-        color: '#333',
-    },
-    normalLabel: {
-        fontSize: 13,
-        color: '#777',
-        marginTop: 3,
-    },
+    analysisColumn: { flex: 1 },
+    analysisLabel: { fontSize: 15, color: '#333' },
+    normalLabel: { fontSize: 13, color: '#777', marginTop: 3 },
     analysisInput: {
-        borderColor: '#cfd8dc',
-        borderWidth: 1,
-        borderRadius: 8,
-        padding: 8,
-        width: '30%',
-        marginRight: 10,
-        backgroundColor: '#fff',
-        fontSize: 15,
-        color: '#333',
+        width: '30%', marginHorizontal: 10,
+        borderWidth: 1, borderColor: '#cfd8dc',
+        borderRadius: 8, padding: 8,
+        backgroundColor: '#fff', fontSize: 15, color: '#333'
     },
     removeButton: {
-        backgroundColor: '#d32f2f',
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderRadius: 8,
+        backgroundColor: '#d32f2f', paddingVertical: 8,
+        paddingHorizontal: 12, borderRadius: 8
     },
+    toggleContainer: {
+        flexDirection: 'row', alignItems: 'center',
+        justifyContent: 'space-between', backgroundColor: '#fff',
+        padding: 12, borderRadius: 8, borderWidth: 1,
+        borderColor: '#cfd8dc', marginVertical: 10
+    },
+    toggleLabel: { fontSize: 16, color: '#333' },
+    pdfRow: {
+        flexDirection: 'row', alignItems: 'center',
+        backgroundColor: '#fff', padding: 12,
+        borderRadius: 8, marginBottom: 8,
+        borderWidth: 1, borderColor: '#cfd8dc'
+    },
+    pdfName: { flex: 1, fontSize: 15, color: '#333' },
+    pdfLabel: { marginLeft: 10, fontSize: 14, color: '#555' },
+    emptyText: { fontSize: 14, color: '#999', textAlign: 'center', marginTop: 10 }
 });
