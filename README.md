@@ -161,10 +161,3 @@ SimuLink/
 * Kirankumar KICHENASSAMY
 
 ---
-
-## Licence
-
-Ce projet est sous **MIT License**.
-
-```
-```
