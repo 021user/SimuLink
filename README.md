@@ -1,7 +1,3 @@
-Thought for a few seconds
-
-
-````markdown
 # SimuLink
 
 **Logiciel de génération et de transfert de résultats de laboratoire**
@@ -54,7 +50,7 @@ SimuLink est un outil léger qui permet à des formateurs de générer des rappo
    git clone https://github.com/021user/SimuLink.git
    cd SimuLink
    git checkout VersionFinal
-````
+```
 
 2. **Nettoyer d’anciennes dépendances**
 
