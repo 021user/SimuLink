@@ -1,4 +1,7 @@
+Thought for a few seconds
 
+
+````markdown
 # SimuLink
 
 **Logiciel de génération et de transfert de résultats de laboratoire**
@@ -99,7 +102,7 @@ cd backend
 python server.py
 ```
 
-> Si un module manque, installer par exemple :
+> Si un module manque :
 >
 > ```bash
 > pip install flask
@@ -141,18 +144,27 @@ SimuLink/
 
 1. **Générer un rapport**
 
-   * Ouvrez l’interface Formateur → remplissez un formulaire “NFS” → cliquez sur **Générer**
-   * Résultat : création de `Patient123_2025-05-08.pdf` dans `backend/output/`
+   ```bash
+   # Dans l’interface Formateur :
+   # Remplissez le formulaire “NFS” puis cliquez sur Générer
+   ```
+
+   Résultat : création de `Patient123_2025-05-08.pdf` dans `backend/output/`
 
 2. **Publier un rapport**
 
-   * Activez le switch “Publier” dans l’app Formateur → les apprenants voient immédiatement le PDF dans l’onglet Réception.
+   ```bash
+   # Activez le switch “Publier” dans l’app Formateur
+   ```
+
+   Les apprenants voient immédiatement le PDF dans l’onglet Réception.
 
 ---
 
 ## Contributeurs
 
-@021user
+* Iyad GUESBA
+* Kirankumar KICHENASSAMY
 
 ---
 
