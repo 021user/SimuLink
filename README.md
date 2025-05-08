@@ -1,7 +1,4 @@
-Thought for a couple of seconds
 
-
-````markdown
 # SimuLink
 
 **Logiciel de génération et de transfert de résultats de laboratoire**
