@@ -1,50 +1,167 @@
-# Welcome to your Expo app 👋
+Thought for a couple of seconds
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
-## Get started
+````markdown
+# SimuLink
 
-1. Install dependencies
+**Logiciel de génération et de transfert de résultats de laboratoire**
+
+---
+
+## Table des matières
+
+- [Description](#description)  
+- [Prérequis](#prérequis)  
+- [Installation](#installation)  
+- [Configuration](#configuration)  
+- [Lancement](#lancement)  
+  - [Serveur Python](#serveur-python)  
+  - [Application mobile](#application-mobile)  
+- [Structure du projet](#structure-du-projet)  
+- [Exemples concrets](#exemples-concrets)  
+- [Contributeurs](#contributeurs)  
+- [Licence](#licence)  
+
+---
+
+## Description
+
+SimuLink est un outil léger qui permet à des formateurs de générer des rapports PDF simulés et de les publier instantanément sur le réseau local pour les apprenants.
+
+---
+
+## Prérequis
+
+- **Node.js** ≥ 16.x  
+- **npm** ≥ 8.x  
+- **Python** ≥ 3.8  
+- **pip**  
+- **Git**
+
+> **Vérification :**  
+> ```bash
+> node -v    # ex. v18.16.0  
+> npm -v     # ex. 9.5.1  
+> python --version  # ex. Python 3.11.2  
+> ```
+
+---
+
+## Installation
+
+1. **Cloner le dépôt**  
+   ```bash
+   git clone https://github.com/021user/SimuLink.git
+   cd SimuLink
+   git checkout VersionFinal
+````
+
+2. **Nettoyer d’anciennes dépendances**
+
+   ```bash
+   rm -rf node_modules package-lock.json
+   ```
+
+3. **Installer les dépendances JavaScript**
 
    ```bash
    npm install
    ```
 
-2. Start the app
+4. **Installer les dépendances Python**
 
    ```bash
-    npx expo start
+   cd backend
+   pip install -r requirements.txt
    ```
 
-In the output, you'll find options to open the app in a
+---
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Configuration
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Dans les fichiers `app/(tabs)/explore.tsx` et `app/(tabs)/index.tsx`, ajuster l’adresse IP du serveur :
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```typescript
+// Exemple dans explore.tsx
+const SERVER_IP = '192.168.1.42'; // Remplacez par votre IPv4
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+> **Récupérer votre IPv4 :**
+>
+> * **Windows** : `ipconfig | findstr IPv4`
+> * **macOS/Linux** : `ifconfig | grep inet`
 
-## Learn more
+---
 
-To learn more about developing your project with Expo, look at the following resources:
+## Lancement
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Serveur Python
 
-## Join the community
+```bash
+cd backend
+python server.py
+```
 
-Join our community of developers creating universal apps.
+> Si un module manque, installer par exemple :
+>
+> ```bash
+> pip install flask
+> ```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### Application mobile
+
+Ouvrir un autre terminal :
+
+```bash
+cd ../
+npx expo start -c
+```
+
+* Scannez le QR code avec l’app Expo sur votre téléphone, ou lancez l’émulateur.
+
+---
+
+## Structure du projet
+
+```
+SimuLink/
+├── backend/
+│   ├── server.py
+│   ├── requirements.txt
+│   └── output/             # Rapports PDF générés
+├── app/
+│   ├── (tabs)/
+│   │   ├── explore.tsx
+│   │   └── index.tsx
+│   └── assets/
+├── README.md
+└── package.json
+```
+
+---
+
+## Exemples concrets
+
+1. **Générer un rapport**
+
+   * Ouvrez l’interface Formateur → remplissez un formulaire “NFS” → cliquez sur **Générer**
+   * Résultat : création de `Patient123_2025-05-08.pdf` dans `backend/output/`
+
+2. **Publier un rapport**
+
+   * Activez le switch “Publier” dans l’app Formateur → les apprenants voient immédiatement le PDF dans l’onglet Réception.
+
+---
+
+## Contributeurs
+
+@021user
+
+---
+
+## Licence
+
+Ce projet est sous **MIT License**.
+
+```
+```
