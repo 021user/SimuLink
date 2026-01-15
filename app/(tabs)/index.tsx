@@ -8,20 +8,37 @@ import {
     TouchableOpacity,
     StyleSheet,
     ScrollView,
-    Switch
+    Switch,
+    Platform,
+    Animated
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import { MaterialIcons } from '@expo/vector-icons';
+
+// Polyfill pour window en React Native
+if (typeof window === 'undefined') {
+    global.window = global as any;
+}
+
 import { io } from 'socket.io-client';
 
-const SERVER_IP = '172.20.10.2';
+// Détection automatique de l'IP
+const getServerIP = () => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        return window.location?.hostname || 'localhost';
+    }
+    return '172.20.10.2';
+};
+
+const SERVER_IP = getServerIP();
 
 const templates = {
     NFS: [
-        { name: 'Leucocytes', unit: '', value: '', reference: '4,00-10,00' },
-        { name: 'Hémoglobines', unit: '', value: '', reference: '11,5-16,0' },
-        { name: 'Hématocrites', unit: '', value: '', reference: '30,0-47,0' },
-        { name: 'VGM', unit: '', value: '', reference: '80-100' },
-        { name: 'Plaquette', unit: '', value: '', reference: '150-400' },
+        { name: 'Leucocytes', unit: '10³/µL', value: '', reference: '4,00-10,00' },
+        { name: 'Hémoglobines', unit: 'g/dL', value: '', reference: '11,5-16,0' },
+        { name: 'Hématocrites', unit: '%', value: '', reference: '30,0-47,0' },
+        { name: 'VGM', unit: 'fL', value: '', reference: '80-100' },
+        { name: 'Plaquette', unit: '10³/µL', value: '', reference: '150-400' },
     ],
     'Ionogramme sanguin': [
         { name: 'NA', unit: 'mmol/L', value: '', reference: '137-143' },
@@ -33,23 +50,23 @@ const templates = {
         { name: 'Creatinine', unit: 'mg/L', value: '', reference: '40-120' },
     ],
     'Bilan hépatique': [
-        { name: 'ASAT', unit: 'UI', value: '', reference: '<35' },
-        { name: 'ALAT', unit: 'UI', value: '', reference: '<33' },
-        { name: 'GGT', unit: 'UI', value: '', reference: '<20' },
-        { name: 'PAL', unit: 'UI', value: '', reference: '<140' },
+        { name: 'ASAT', unit: 'UI/L', value: '', reference: '<35' },
+        { name: 'ALAT', unit: 'UI/L', value: '', reference: '<33' },
+        { name: 'GGT', unit: 'UI/L', value: '', reference: '<20' },
+        { name: 'PAL', unit: 'UI/L', value: '', reference: '<140' },
     ],
     Hémostase: [
-        { name: 'TP', unit: '%', value: '', reference: 'normal' },
-        { name: 'TCA', unit: '', value: '', reference: '0.8-1.2' },
-        { name: 'Fibrinogène', unit: 'g', value: '', reference: '2-4' },
+        { name: 'TP', unit: '%', value: '', reference: '70-100' },
+        { name: 'TCA', unit: 'ratio', value: '', reference: '0.8-1.2' },
+        { name: 'Fibrinogène', unit: 'g/L', value: '', reference: '2-4' },
     ],
     'GAZ du sang': [
-        { name: 'pH', unit: '', value: '', reference: 'normal' },
-        { name: 'PaO2', unit: 'mg/mHg', value: '', reference: '90-100' },
-        { name: 'PaCO2', unit: 'mg/mHg', value: '', reference: '35-45' },
+        { name: 'pH', unit: '', value: '', reference: '7.35-7.45' },
+        { name: 'PaO2', unit: 'mmHg', value: '', reference: '90-100' },
+        { name: 'PaCO2', unit: 'mmHg', value: '', reference: '35-45' },
         { name: 'CO2 total', unit: 'mmol/L', value: '', reference: '20-35' },
         { name: 'Bicarbonates', unit: 'mmol/L', value: '', reference: '22-26' },
-        { name: 'pH', unit: '%', value: '', reference: '95-100' },
+        { name: 'SaO2', unit: '%', value: '', reference: '95-100' },
     ],
 };
 
@@ -69,8 +86,11 @@ export default function PatientFolderScreen() {
     const [selectedTemplate, setSelectedTemplate] = useState('');
     const [publishToReception, setPublishToReception] = useState(true);
 
-    // fichier → publié ?
     const [pdfVisibility, setPdfVisibility] = useState<Record<string, boolean>>({});
+
+    // États Hemocue pour envoi vers simulation
+    const [hemoglobin, setHemoglobin] = useState('');
+    const [hematocrit, setHematocrit] = useState('');
 
     useEffect(() => {
         const s = io(`http://${SERVER_IP}:5000`);
@@ -97,12 +117,10 @@ export default function PatientFolderScreen() {
     async function fetchPDFList() {
         if (!selectedFolder) return;
         try {
-            // tous les PDFs
             const allR = await fetch(
                 `http://${SERVER_IP}:5000/list-pdfs-in-folder/${selectedFolder}`
             );
             const all: string[] = await allR.json();
-            // seulement publiés
             const pubR = await fetch(
                 `http://${SERVER_IP}:5000/list-pdfs-in-folder/${selectedFolder}?published=true`
             );
@@ -136,7 +154,7 @@ export default function PatientFolderScreen() {
             if (res.ok) {
                 setPatientFolders([...patientFolders, newFolderName.trim()]);
                 setNewFolderName('');
-                Alert.alert('Succès', js.message);
+                Alert.alert('✓ Succès', js.message);
             }
         } catch {
             Alert.alert('Erreur', 'Échec de la création du dossier');
@@ -167,15 +185,15 @@ export default function PatientFolderScreen() {
             });
             const js = await res.json();
             if (res.ok) {
-                Alert.alert('Succès', 'Le rapport a été généré');
+                Alert.alert('✓ Succès', 'Le rapport a été généré avec succès');
                 fetchPDFList();
-                // reset
                 setReportName('');
                 setReportDate('');
                 setAnalysisName('');
                 setAnalysisUnit('');
                 setAnalysisValue('');
                 setAnalysesList([]);
+                setSelectedTemplate('');
             }
         } catch {
             Alert.alert('Erreur', 'Échec de la génération du rapport');
@@ -184,7 +202,7 @@ export default function PatientFolderScreen() {
 
     function addAnalysis() {
         if (!analysisName || !analysisUnit || !analysisValue) {
-            return Alert.alert('Erreur', 'Veuillez remplir tous les champs de l’analyse');
+            return Alert.alert('Erreur', 'Veuillez remplir tous les champs de l\'analyse');
         }
         setAnalysesList([
             ...analysesList,
@@ -215,9 +233,7 @@ export default function PatientFolderScreen() {
 
     const togglePdfVisibility = async (file: string) => {
         const next = !pdfVisibility[file];
-        // 1) mise à jour locale
         setPdfVisibility(prev => ({ ...prev, [file]: next }));
-        // 2) appel au serveur
         try {
             const res = await fetch(`http://${SERVER_IP}:5000/set-publish`, {
                 method: 'POST',
@@ -231,238 +247,762 @@ export default function PatientFolderScreen() {
             if (!res.ok) throw new Error();
         } catch {
             Alert.alert('Erreur', 'Impossible de mettre à jour la publication');
-            // rollback local
             setPdfVisibility(prev => ({ ...prev, [file]: !next }));
         }
     };
 
+    // Envoyer les valeurs Hemocue vers l'écran de simulation
+    const sendHemocueToSimulation = () => {
+        if (!hemoglobin && !hematocrit) {
+            return Alert.alert('Erreur', 'Veuillez entrer au moins une valeur');
+        }
+
+        const data = {
+            hemoglobin: hemoglobin || null,
+            hematocrit: hematocrit || null,
+            timestamp: new Date().toISOString()
+        };
+
+        // Émettre via Socket.IO
+        if (socket) {
+            socket.emit('hemocue-update', data);
+            Alert.alert('✓ Envoyé', 'Valeurs Hemocue envoyées vers l\'écran de simulation');
+
+            // Reset des champs
+            setHemoglobin('');
+            setHematocrit('');
+        } else {
+            Alert.alert('Erreur', 'Connexion socket non établie');
+        }
+    };
 
     return (
-        <ScrollView contentContainerStyle={styles.container}>
-            <Text style={styles.header}>Gestion des Dossiers Patients</Text>
-
-            {/* Création de dossier */}
-            <Text style={styles.sectionTitle}>Création de dossier</Text>
-            <View style={styles.inputContainer}>
-                <TextInput
-                    placeholder="Nom du dossier patient"
-                    value={newFolderName}
-                    onChangeText={setNewFolderName}
-                    style={styles.input}
-                    placeholderTextColor="#999"
-                />
-                <TouchableOpacity onPress={addPatientFolder} style={styles.button}>
-                    <Text style={styles.buttonText}>Ajouter</Text>
-                </TouchableOpacity>
+        <View style={styles.container}>
+            {/* Header avec effet gradient */}
+            <View style={styles.headerGradient}>
+                <View style={styles.headerContent}>
+                    <MaterialIcons name="folder-shared" size={36} color="#fff" />
+                    <Text style={styles.headerTitle}>Gestion Patients</Text>
+                </View>
             </View>
 
-            {/* Liste dossiers */}
-            <FlatList
-                data={patientFolders}
-                keyExtractor={(_, i) => i.toString()}
-                renderItem={({ item }) => (
-                    <TouchableOpacity
-                        onPress={() => setSelectedFolder(item)}
-                        style={[
-                            styles.folderItem,
-                            selectedFolder === item && styles.selectedFolder
-                        ]}
-                    >
-                        <Text style={styles.folderText}>{item}</Text>
-                    </TouchableOpacity>
-                )}
-            />
-
-            {/* Rapport Médical */}
-            <Text style={styles.sectionTitle}>Rapport Médical</Text>
-            <View style={styles.inputContainer}>
-                <TextInput
-                    placeholder="Nom du rapport"
-                    value={reportName}
-                    onChangeText={setReportName}
-                    style={styles.input}
-                    placeholderTextColor="#999"
-                />
-                <TextInput
-                    placeholder="Date (YYYY-MM-DD)"
-                    value={reportDate}
-                    onChangeText={setReportDate}
-                    style={styles.input}
-                    placeholderTextColor="#999"
-                />
-            </View>
-
-            {/* Template */}
-            <Text style={styles.sectionTitle}>Sélectionnez un Template</Text>
-            <View style={styles.pickerContainer}>
-                <Picker
-                    selectedValue={selectedTemplate}
-                    onValueChange={applyTemplate}
-                    style={styles.picker}
-                >
-                    <Picker.Item label="Sélectionner un template" value="" />
-                    {Object.keys(templates).map(key => (
-                        <Picker.Item key={key} label={key} value={key} />
-                    ))}
-                </Picker>
-            </View>
-
-            {/* Ajout d’analyse */}
-            <Text style={styles.sectionTitle}>Ajouter / Modifier une Analyse</Text>
-            <View style={styles.analysesContainer}>
-                <TextInput
-                    placeholder="Nom"
-                    value={analysisName}
-                    onChangeText={setAnalysisName}
-                    style={[styles.input, styles.smallInput]}
-                    placeholderTextColor="#999"
-                />
-                <TextInput
-                    placeholder="Unité"
-                    value={analysisUnit}
-                    onChangeText={setAnalysisUnit}
-                    style={[styles.input, styles.smallInput]}
-                    placeholderTextColor="#999"
-                />
-                <TextInput
-                    placeholder="Valeur"
-                    value={analysisValue}
-                    onChangeText={setAnalysisValue}
-                    style={[styles.input, styles.smallInput]}
-                    placeholderTextColor="#999"
-                    keyboardType="numeric"
-                />
-                <TouchableOpacity onPress={addAnalysis} style={[styles.button, styles.smallButton]}>
-                    <Text style={styles.buttonText}>Ajouter</Text>
-                </TouchableOpacity>
-            </View>
-
-            {analysesList.map((item, idx) => (
-                <View key={idx} style={styles.analysisRow}>
-                    <View style={styles.analysisColumn}>
-                        <Text style={styles.analysisLabel}>
-                            {item.name} ({item.unit})
-                        </Text>
-                        <Text style={styles.normalLabel}>Norme : {item.reference}</Text>
+            <ScrollView
+                style={styles.scrollView}
+                contentContainerStyle={styles.contentContainer}
+                showsVerticalScrollIndicator={false}
+            >
+                {/* Création de dossier */}
+                <View style={[styles.card, styles.shadowCard]}>
+                    <View style={styles.cardHeaderRow}>
+                        <View style={styles.iconCircle}>
+                            <MaterialIcons name="create-new-folder" size={24} color="#667eea" />
+                        </View>
+                        <Text style={styles.cardTitle}>Nouveau Dossier</Text>
                     </View>
-                    <TextInput
-                        style={styles.analysisInput}
-                        value={item.value}
-                        onChangeText={v => {
-                            const c = [...analysesList]; c[idx].value = v; setAnalysesList(c);
-                        }}
-                        keyboardType="numeric"
-                        placeholder="Valeur"
-                        placeholderTextColor="#999"
+                    <View style={styles.inputRow}>
+                        <View style={styles.inputWrapper}>
+                            <TextInput
+                                placeholder="Nom du dossier patient"
+                                value={newFolderName}
+                                onChangeText={setNewFolderName}
+                                style={styles.modernInput}
+                                placeholderTextColor="#aaa"
+                            />
+                        </View>
+                        <TouchableOpacity onPress={addPatientFolder} style={styles.addButtonCircle}>
+                            <MaterialIcons name="add" size={28} color="#fff" />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                {/* Liste dossiers */}
+                <View style={[styles.card, styles.shadowCard]}>
+                    <View style={styles.cardHeaderRow}>
+                        <View style={styles.iconCircle}>
+                            <MaterialIcons name="folder-open" size={24} color="#667eea" />
+                        </View>
+                        <Text style={styles.cardTitle}>Dossiers Patients</Text>
+                    </View>
+                    <FlatList
+                        data={patientFolders}
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        keyExtractor={(_, i) => i.toString()}
+                        contentContainerStyle={styles.folderListContainer}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity
+                                onPress={() => setSelectedFolder(item)}
+                                style={[
+                                    styles.folderPill,
+                                    selectedFolder === item && styles.folderPillSelected
+                                ]}
+                                activeOpacity={0.7}
+                            >
+                                <MaterialIcons
+                                    name={selectedFolder === item ? "folder-open" : "folder"}
+                                    size={22}
+                                    color={selectedFolder === item ? '#fff' : '#667eea'}
+                                />
+                                <Text style={[
+                                    styles.folderPillText,
+                                    selectedFolder === item && styles.folderPillTextSelected
+                                ]}>
+                                    {item}
+                                </Text>
+                                {selectedFolder === item && (
+                                    <View style={styles.checkBadge}>
+                                        <MaterialIcons name="check" size={14} color="#fff" />
+                                    </View>
+                                )}
+                            </TouchableOpacity>
+                        )}
+                        ListEmptyComponent={
+                            <Text style={styles.emptyText}>Aucun dossier</Text>
+                        }
                     />
-                    <TouchableOpacity onPress={() => removeAnalysis(idx)} style={styles.removeButton}>
-                        <Text style={styles.buttonText}>Suppr</Text>
+                </View>
+
+                {/* Rapport Médical */}
+                <View style={[styles.card, styles.shadowCard]}>
+                    <View style={styles.cardHeaderRow}>
+                        <View style={styles.iconCircle}>
+                            <MaterialIcons name="description" size={24} color="#667eea" />
+                        </View>
+                        <Text style={styles.cardTitle}>Nouveau Rapport</Text>
+                    </View>
+                    <View style={styles.inputWrapper}>
+                        <MaterialIcons name="edit" size={20} color="#999" style={styles.inputIcon} />
+                        <TextInput
+                            placeholder="Nom du rapport"
+                            value={reportName}
+                            onChangeText={setReportName}
+                            style={styles.modernInput}
+                            placeholderTextColor="#aaa"
+                        />
+                    </View>
+                    <View style={styles.inputWrapper}>
+                        <MaterialIcons name="event" size={20} color="#999" style={styles.inputIcon} />
+                        <TextInput
+                            placeholder="Date (YYYY-MM-DD)"
+                            value={reportDate}
+                            onChangeText={setReportDate}
+                            style={styles.modernInput}
+                            placeholderTextColor="#aaa"
+                        />
+                    </View>
+                </View>
+
+                {/* Template */}
+                <View style={[styles.card, styles.shadowCard]}>
+                    <View style={styles.cardHeaderRow}>
+                        <View style={styles.iconCircle}>
+                            <MaterialIcons name="ballot" size={24} color="#667eea" />
+                        </View>
+                        <Text style={styles.cardTitle}>Template d'Analyse</Text>
+                    </View>
+                    <View style={styles.pickerWrapper}>
+                        <Picker
+                            selectedValue={selectedTemplate}
+                            onValueChange={applyTemplate}
+                            style={styles.modernPicker}
+                        >
+                            <Picker.Item label="Choisir un template..." value="" />
+                            {Object.keys(templates).map(key => (
+                                <Picker.Item key={key} label={key} value={key} />
+                            ))}
+                        </Picker>
+                    </View>
+                </View>
+
+                {/* Ajout d'analyse */}
+                <View style={[styles.card, styles.shadowCard]}>
+                    <View style={styles.cardHeaderRow}>
+                        <View style={styles.iconCircle}>
+                            <MaterialIcons name="science" size={24} color="#667eea" />
+                        </View>
+                        <Text style={styles.cardTitle}>Ajouter une Analyse</Text>
+                    </View>
+                    <View style={styles.analysisInputGrid}>
+                        <View style={[styles.inputWrapper, styles.gridInput]}>
+                            <TextInput
+                                placeholder="Nom"
+                                value={analysisName}
+                                onChangeText={setAnalysisName}
+                                style={styles.modernInput}
+                                placeholderTextColor="#aaa"
+                            />
+                        </View>
+                        <View style={[styles.inputWrapper, styles.gridInput]}>
+                            <TextInput
+                                placeholder="Unité"
+                                value={analysisUnit}
+                                onChangeText={setAnalysisUnit}
+                                style={styles.modernInput}
+                                placeholderTextColor="#aaa"
+                            />
+                        </View>
+                        <View style={[styles.inputWrapper, styles.gridInput]}>
+                            <TextInput
+                                placeholder="Valeur"
+                                value={analysisValue}
+                                onChangeText={setAnalysisValue}
+                                style={styles.modernInput}
+                                placeholderTextColor="#aaa"
+                                keyboardType="numeric"
+                            />
+                        </View>
+                    </View>
+                    <TouchableOpacity onPress={addAnalysis} style={styles.modernButton}>
+                        <MaterialIcons name="add-circle-outline" size={22} color="#fff" />
+                        <Text style={styles.modernButtonText}>Ajouter l'analyse</Text>
                     </TouchableOpacity>
                 </View>
-            ))}
 
-            {/* Publier toggle */}
-            <View style={styles.toggleContainer}>
-                <Text style={styles.toggleLabel}>Publier en Réception</Text>
-                <Switch
-                    value={publishToReception}
-                    onValueChange={setPublishToReception}
-                    trackColor={{ true: '#4caf50', false: '#ccc' }}
-                    thumbColor="#fff"
-                />
-            </View>
+                {/* Liste des analyses */}
+                {analysesList.length > 0 && (
+                    <View style={[styles.card, styles.shadowCard]}>
+                        <View style={styles.cardHeaderRow}>
+                            <View style={styles.iconCircle}>
+                                <MaterialIcons name="list-alt" size={24} color="#667eea" />
+                            </View>
+                            <Text style={styles.cardTitle}>Analyses</Text>
+                            <View style={styles.countBadge}>
+                                <Text style={styles.countText}>{analysesList.length}</Text>
+                            </View>
+                        </View>
+                        {analysesList.map((item, idx) => (
+                            <View key={idx} style={styles.analysisCard}>
+                                <View style={styles.analysisContent}>
+                                    <Text style={styles.analysisNameText}>{item.name}</Text>
+                                    <Text style={styles.analysisSubText}>
+                                        {item.unit} • Norme: {item.reference}
+                                    </Text>
+                                </View>
+                                <TextInput
+                                    style={styles.analysisValueInput}
+                                    value={item.value}
+                                    onChangeText={v => {
+                                        const c = [...analysesList];
+                                        c[idx].value = v;
+                                        setAnalysesList(c);
+                                    }}
+                                    keyboardType="numeric"
+                                    placeholder="Val."
+                                    placeholderTextColor="#aaa"
+                                />
+                                <TouchableOpacity
+                                    onPress={() => removeAnalysis(idx)}
+                                    style={styles.deleteIconButton}
+                                >
+                                    <MaterialIcons name="close" size={22} color="#ff6b6b" />
+                                </TouchableOpacity>
+                            </View>
+                        ))}
+                    </View>
+                )}
 
-            <TouchableOpacity onPress={generateReportInFolder} style={styles.button}>
-                <Text style={styles.buttonText}>Générer le rapport</Text>
-            </TouchableOpacity>
-
-            {/* Liste des PDFs */}
-            <Text style={styles.sectionTitle}>PDFs dans {selectedFolder || '…'}</Text>
-            {pdfList.length === 0 ? (
-                <Text style={styles.emptyText}>Aucun PDF.</Text>
-            ) : (
-                pdfList.map(file => (
-                    <View key={file} style={styles.pdfRow}>
-                        <Text style={styles.pdfName}>{file}</Text>
-                        <Switch
-                            value={!!pdfVisibility[file]}
-                            onValueChange={() => togglePdfVisibility(file)}
-                            trackColor={{ true: '#4caf50', false: '#ccc' }}
-                            thumbColor="#fff"
-                        />
-                        <Text style={styles.pdfLabel}>
-                            affiché {pdfVisibility[file] ? 'oui' : 'non'}
+                {/* Section Hemocue - Envoi vers simulation */}
+                <View style={[styles.card, styles.shadowCard, styles.hemocueCard]}>
+                    <View style={styles.cardHeaderRow}>
+                        <View style={[styles.iconCircle, { backgroundColor: '#ffe5e5' }]}>
+                            <MaterialIcons name="bloodtype" size={24} color="#ff6b6b" />
+                        </View>
+                        <Text style={[styles.cardTitle, { color: '#ff6b6b' }]}>
+                            Envoyer Hemocue vers Simulation
                         </Text>
                     </View>
-                ))
-            )}
-        </ScrollView>
+
+                    <View style={styles.hemocueGrid}>
+                        <View style={styles.hemocueInputBox}>
+                            <Text style={styles.hemocueLabel}>Hémoglobine (g/dL)</Text>
+                            <TextInput
+                                placeholder="14.5"
+                                value={hemoglobin}
+                                onChangeText={setHemoglobin}
+                                style={styles.hemocueInput}
+                                placeholderTextColor="#ccc"
+                                keyboardType="decimal-pad"
+                            />
+                        </View>
+
+                        <View style={styles.hemocueInputBox}>
+                            <Text style={styles.hemocueLabel}>Hématocrite (%)</Text>
+                            <TextInput
+                                placeholder="42"
+                                value={hematocrit}
+                                onChangeText={setHematocrit}
+                                style={styles.hemocueInput}
+                                placeholderTextColor="#ccc"
+                                keyboardType="decimal-pad"
+                            />
+                        </View>
+                    </View>
+
+                    <TouchableOpacity
+                        onPress={sendHemocueToSimulation}
+                        style={styles.hemocueButton}
+                        activeOpacity={0.8}
+                    >
+                        <MaterialIcons name="send" size={22} color="#fff" />
+                        <Text style={styles.modernButtonText}>Envoyer vers écran Hemocue</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* Toggle Publication */}
+                <View style={[styles.card, styles.shadowCard]}>
+                    <View style={styles.toggleContainer}>
+                        <View style={styles.toggleLeft}>
+                            <View style={[styles.iconCircle, { backgroundColor: '#e8f5e9' }]}>
+                                <MaterialIcons name="visibility" size={24} color="#4caf50" />
+                            </View>
+                            <Text style={styles.toggleText}>Publier en Réception</Text>
+                        </View>
+                        <Switch
+                            value={publishToReception}
+                            onValueChange={setPublishToReception}
+                            trackColor={{ true: '#667eea', false: '#ddd' }}
+                            thumbColor="#fff"
+                        />
+                    </View>
+                </View>
+
+                {/* Bouton Générer */}
+                <TouchableOpacity
+                    onPress={generateReportInFolder}
+                    style={[
+                        styles.generateButton,
+                        (!selectedFolder || analysesList.length === 0) && styles.generateButtonDisabled
+                    ]}
+                    disabled={!selectedFolder || analysesList.length === 0}
+                    activeOpacity={0.8}
+                >
+                    <MaterialIcons name="picture-as-pdf" size={26} color="#fff" />
+                    <Text style={styles.generateButtonText}>Générer le Rapport PDF</Text>
+                </TouchableOpacity>
+
+                {/* Liste des PDFs */}
+                {selectedFolder && (
+                    <View style={[styles.card, styles.shadowCard]}>
+                        <View style={styles.cardHeaderRow}>
+                            <View style={styles.iconCircle}>
+                                <MaterialIcons name="library-books" size={24} color="#667eea" />
+                            </View>
+                            <Text style={styles.cardTitle}>Documents</Text>
+                        </View>
+                        {pdfList.length === 0 ? (
+                            <View style={styles.emptyStateContainer}>
+                                <MaterialIcons name="insert-drive-file" size={56} color="#e0e0e0" />
+                                <Text style={styles.emptyStateText}>Aucun document</Text>
+                            </View>
+                        ) : (
+                            pdfList.map(file => (
+                                <View key={file} style={styles.pdfCard}>
+                                    <View style={styles.pdfIconCircle}>
+                                        <MaterialIcons name="picture-as-pdf" size={24} color="#ff6b6b" />
+                                    </View>
+                                    <Text style={styles.pdfFileName}>{file}</Text>
+                                    <View style={styles.pdfToggle}>
+                                        <Switch
+                                            value={!!pdfVisibility[file]}
+                                            onValueChange={() => togglePdfVisibility(file)}
+                                            trackColor={{ true: '#4caf50', false: '#ddd' }}
+                                            thumbColor="#fff"
+                                        />
+                                    </View>
+                                </View>
+                            ))
+                        )}
+                    </View>
+                )}
+
+                <View style={styles.footerInfo}>
+                    <MaterialIcons name="dns" size={16} color="#999" />
+                    <Text style={styles.footerText}>Serveur: {SERVER_IP}</Text>
+                </View>
+            </ScrollView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flexGrow: 1, padding: 20, backgroundColor: '#f2f6fa' },
-    header: { fontSize: 22, fontWeight: 'bold', color: '#333', textAlign: 'center', marginBottom: 20 },
-    sectionTitle: { fontSize: 18, fontWeight: '600', color: '#005ea2', marginTop: 20, marginBottom: 10 },
-    inputContainer: { marginBottom: 15 },
-    input: {
-        height: 48, borderWidth: 1, borderColor: '#cfd8dc',
-        borderRadius: 10, paddingHorizontal: 15,
-        backgroundColor: '#fff', marginBottom: 10,
-        fontSize: 16, color: '#333'
+    container: {
+        flex: 1,
+        backgroundColor: '#f8f9fd',
     },
-    pickerContainer: {
-        backgroundColor: '#fff', borderWidth: 1,
-        borderColor: '#cfd8dc', borderRadius: 10,
-        marginBottom: 15, overflow: 'hidden'
+    headerGradient: {
+        backgroundColor: '#667eea',
+        paddingTop: Platform.OS === 'ios' ? 60 : 40,
+        paddingBottom: 20,
+        paddingHorizontal: 20,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+        shadowColor: '#667eea',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+        elevation: 8,
     },
-    picker: { height: 48, width: '100%' },
-    analysesContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 15 },
-    smallInput: { width: '30%', marginRight: 5 },
-    smallButton: { paddingHorizontal: 12, marginTop: 5 },
-    button: {
-        backgroundColor: '#005ea2', paddingVertical: 14,
-        borderRadius: 10, alignItems: 'center', marginVertical: 5
+    headerContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-    folderItem: {
-        padding: 15, borderWidth: 1, borderColor: '#cfd8dc',
-        borderRadius: 10, backgroundColor: '#fff', marginBottom: 8
+    headerTitle: {
+        fontSize: 28,
+        fontWeight: '800',
+        color: '#fff',
+        marginLeft: 12,
+        letterSpacing: 0.5,
     },
-    selectedFolder: { borderColor: '#005ea2', backgroundColor: '#e1f5fe' },
-    folderText: { fontSize: 16, color: '#333' },
-    analysisRow: {
-        flexDirection: 'row', alignItems: 'center',
-        backgroundColor: '#fff', padding: 12,
-        borderRadius: 10, elevation: 2, marginBottom: 10
+    scrollView: {
+        flex: 1,
     },
-    analysisColumn: { flex: 1 },
-    analysisLabel: { fontSize: 15, color: '#333' },
-    normalLabel: { fontSize: 13, color: '#777', marginTop: 3 },
-    analysisInput: {
-        width: '30%', marginHorizontal: 10,
-        borderWidth: 1, borderColor: '#cfd8dc',
-        borderRadius: 8, padding: 8,
-        backgroundColor: '#fff', fontSize: 15, color: '#333'
+    contentContainer: {
+        padding: 16,
+        paddingBottom: 40,
     },
-    removeButton: {
-        backgroundColor: '#d32f2f', paddingVertical: 8,
-        paddingHorizontal: 12, borderRadius: 8
+    card: {
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        padding: 20,
+        marginBottom: 16,
+    },
+    shadowCard: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 3,
+    },
+    cardHeaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    iconCircle: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: '#f0f3ff',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 12,
+    },
+    cardTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#2d3748',
+        flex: 1,
+    },
+    inputRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    inputWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f7f8fc',
+        borderRadius: 16,
+        paddingHorizontal: 16,
+        marginBottom: 12,
+        borderWidth: 2,
+        borderColor: 'transparent',
+    },
+    inputIcon: {
+        marginRight: 10,
+    },
+    modernInput: {
+        flex: 1,
+        height: 52,
+        fontSize: 16,
+        color: '#2d3748',
+        fontWeight: '500',
+    },
+    addButtonCircle: {
+        width: 52,
+        height: 52,
+        borderRadius: 26,
+        backgroundColor: '#667eea',
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#667eea',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    folderListContainer: {
+        paddingVertical: 8,
+    },
+    folderPill: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f0f3ff',
+        paddingHorizontal: 20,
+        paddingVertical: 14,
+        borderRadius: 25,
+        marginRight: 10,
+        borderWidth: 2,
+        borderColor: 'transparent',
+    },
+    folderPillSelected: {
+        backgroundColor: '#667eea',
+        borderColor: '#5a67d8',
+    },
+    folderPillText: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#667eea',
+        marginLeft: 8,
+    },
+    folderPillTextSelected: {
+        color: '#fff',
+    },
+    checkBadge: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        backgroundColor: 'rgba(255,255,255,0.3)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginLeft: 8,
+    },
+    pickerWrapper: {
+        backgroundColor: '#f7f8fc',
+        borderRadius: 16,
+        overflow: 'hidden',
+        borderWidth: 2,
+        borderColor: 'transparent',
+    },
+    modernPicker: {
+        height: 52,
+    },
+    analysisInputGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        marginBottom: 12,
+    },
+    gridInput: {
+        width: '32%',
+    },
+    modernButton: {
+        flexDirection: 'row',
+        backgroundColor: '#667eea',
+        paddingVertical: 16,
+        paddingHorizontal: 24,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#667eea',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    modernButtonText: {
+        color: '#fff',
+        fontSize: 17,
+        fontWeight: '700',
+        marginLeft: 8,
+    },
+    analysisCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f7f8fc',
+        padding: 16,
+        borderRadius: 16,
+        marginBottom: 10,
+    },
+    analysisContent: {
+        flex: 1,
+    },
+    analysisNameText: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#2d3748',
+        marginBottom: 4,
+    },
+    analysisSubText: {
+        fontSize: 13,
+        color: '#718096',
+    },
+    analysisValueInput: {
+        width: 80,
+        height: 44,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#2d3748',
+        textAlign: 'center',
+        marginRight: 12,
+        borderWidth: 2,
+        borderColor: '#e2e8f0',
+    },
+    deleteIconButton: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 2,
+        borderColor: '#ffe5e5',
     },
     toggleContainer: {
-        flexDirection: 'row', alignItems: 'center',
-        justifyContent: 'space-between', backgroundColor: '#fff',
-        padding: 12, borderRadius: 8, borderWidth: 1,
-        borderColor: '#cfd8dc', marginVertical: 10
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
     },
-    toggleLabel: { fontSize: 16, color: '#333' },
-    pdfRow: {
-        flexDirection: 'row', alignItems: 'center',
-        backgroundColor: '#fff', padding: 12,
-        borderRadius: 8, marginBottom: 8,
-        borderWidth: 1, borderColor: '#cfd8dc'
+    toggleLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
     },
-    pdfName: { flex: 1, fontSize: 15, color: '#333' },
-    pdfLabel: { marginLeft: 10, fontSize: 14, color: '#555' },
-    emptyText: { fontSize: 14, color: '#999', textAlign: 'center', marginTop: 10 }
+    toggleText: {
+        fontSize: 17,
+        fontWeight: '600',
+        color: '#2d3748',
+        marginLeft: 12,
+    },
+    generateButton: {
+        flexDirection: 'row',
+        backgroundColor: '#48bb78',
+        paddingVertical: 20,
+        paddingHorizontal: 32,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 16,
+        shadowColor: '#48bb78',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.4,
+        shadowRadius: 12,
+        elevation: 6,
+    },
+    generateButtonDisabled: {
+        backgroundColor: '#a0aec0',
+        shadowOpacity: 0,
+        elevation: 0,
+    },
+    generateButtonText: {
+        color: '#fff',
+        fontSize: 19,
+        fontWeight: '800',
+        marginLeft: 12,
+        letterSpacing: 0.5,
+    },
+    pdfCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f7f8fc',
+        padding: 16,
+        borderRadius: 16,
+        marginBottom: 10,
+    },
+    pdfIconCircle: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: '#ffe5e5',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 12,
+    },
+    pdfFileName: {
+        flex: 1,
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#2d3748',
+    },
+    pdfToggle: {
+        marginLeft: 12,
+    },
+    emptyText: {
+        fontSize: 15,
+        color: '#a0aec0',
+        textAlign: 'center',
+        paddingVertical: 20,
+    },
+    emptyStateContainer: {
+        alignItems: 'center',
+        paddingVertical: 40,
+    },
+    emptyStateText: {
+        fontSize: 16,
+        color: '#a0aec0',
+        marginTop: 16,
+        fontWeight: '500',
+    },
+    countBadge: {
+        backgroundColor: '#667eea',
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: 12,
+        marginLeft: 8,
+    },
+    countText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '700',
+    },
+    footerInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 20,
+    },
+    footerText: {
+        fontSize: 13,
+        color: '#a0aec0',
+        marginLeft: 8,
+        fontWeight: '500',
+    },
+    hemocueCard: {
+        borderWidth: 2,
+        borderColor: '#ffe5e5',
+    },
+    hemocueGrid: {
+        flexDirection: 'row',
+        gap: 12,
+        marginBottom: 16,
+    },
+    hemocueInputBox: {
+        flex: 1,
+        backgroundColor: '#fff5f5',
+        borderRadius: 16,
+        padding: 16,
+        borderWidth: 2,
+        borderColor: '#ffe5e5',
+    },
+    hemocueLabel: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#ff6b6b',
+        marginBottom: 8,
+    },
+    hemocueInput: {
+        fontSize: 24,
+        fontWeight: '800',
+        color: '#2d3748',
+        textAlign: 'center',
+        paddingVertical: 8,
+    },
+    hemocueButton: {
+        flexDirection: 'row',
+        backgroundColor: '#ff6b6b',
+        paddingVertical: 16,
+        paddingHorizontal: 24,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#ff6b6b',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 4,
+    },
 });

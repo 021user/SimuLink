@@ -5,8 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fad9170e-658d-47bf-886a-e03bf982b7eb" name="Changes" comment="Feature : ajout de la possibilité de choisir si le rapport est affiché dans la page reception ou non">
+      <change afterPath="$PROJECT_DIR$/app/(tabs)/Hemocue.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/backend/dossierpatient/Mme Dacosta/published.json" beforeDir="false" afterPath="$PROJECT_DIR$/backend/backend/dossierpatient/Mme Dacosta/published.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(tabs)/_layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(tabs)/_layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(tabs)/explore.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(tabs)/explore.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(tabs)/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(tabs)/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/server.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,6 +46,7 @@
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="HARD" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -110,6 +117,8 @@
       <workItem from="1746618575865" duration="169000" />
       <workItem from="1746618754123" duration="4590000" />
       <workItem from="1746625951267" duration="1097000" />
+      <workItem from="1766177996747" duration="335000" />
+      <workItem from="1766396721446" duration="926000" />
     </task>
     <task id="LOCAL-00001" summary="Feature : Ajout du">
       <option name="closed" value="true" />
@@ -173,5 +182,13 @@
     <MESSAGE value="Feature : ajout de la detections des adresses IP, générations des pdf, button d'envoi To-Fix : le button d'envoi, séparer la page réception et envoi" />
     <MESSAGE value="Feature : ajout de la possibilité de choisir si le rapport est affiché dans la page reception ou non" />
     <option name="LAST_COMMIT_MESSAGE" value="Feature : ajout de la possibilité de choisir si le rapport est affiché dans la page reception ou non" />
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+    </promptFileLocations>
   </component>
 </project>

@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory, make_response
 from flask_cors import CORS
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, emit
 import os
 import datetime
 import json
@@ -50,6 +50,27 @@ def save_publish_map(folder_path: str, m: dict):
     meta = os.path.join(folder_path, 'published.json')
     with open(meta, 'w', encoding='utf-8') as f:
         json.dump(m, f)
+
+# ─── Socket.IO Events ────────────────────────────────────
+
+@socketio.on('connect')
+def handle_connect():
+    print('✓ Client connecté')
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('✗ Client déconnecté')
+
+@socketio.on('hemocue-update')
+def handle_hemocue_update(data):
+    """
+    Reçoit les valeurs Hemocue du régisseur et les broadcast
+    vers tous les écrans de simulation
+    """
+    print(f'📊 Hemocue reçu: Hb={data.get("hemoglobin")} Ht={data.get("hematocrit")}')
+
+    # Broadcast vers tous les clients SAUF l'émetteur
+    emit('hemocue-update', data, broadcast=True, include_self=False)
 
 # ─────────────────────────────────────────────────────────
 
@@ -229,4 +250,11 @@ def serve_pdf(folder, filename):
     return send_from_directory(path, filename)
 
 if __name__ == "__main__":
+    print("=" * 60)
+    print("🏥 SERVEUR SIMULATION MÉDICALE DÉMARRÉ")
+    print("=" * 60)
+    print("📡 Socket.IO activé pour communication temps réel")
+    print("🩸 Support Hemocue activé")
+    print("📄 Gestion des rapports PDF activée")
+    print("=" * 60)
     socketio.run(app, host="0.0.0.0", port=5000, debug=True)
