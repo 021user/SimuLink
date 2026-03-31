@@ -1,163 +1,143 @@
-# SimuLink
+# 🔬 SimuLink
 
-**Logiciel de génération et de transfert de résultats de laboratoire**
+**Logiciel open source de génération et de transfert de résultats de laboratoire simulés.**
 
----
-
-## Table des matières
-
-- [Description](#description)  
-- [Prérequis](#prérequis)  
-- [Installation](#installation)  
-- [Configuration](#configuration)  
-- [Lancement](#lancement)  
-  - [Serveur Python](#serveur-python)  
-  - [Application mobile](#application-mobile)  
-- [Structure du projet](#structure-du-projet)  
-- [Exemples concrets](#exemples-concrets)  
-- [Contributeurs](#contributeurs)  
-- [Licence](#licence)  
+Développé au sein d'**iLumens**, le centre de simulation en santé de l'Université Paris Cité, SimuLink est un outil conçu pour enrichir les séances de simulation médicale. Il permet aux formateurs de générer en quelques clics des résultats d'examens biologiques réalistes (bilans sanguins, NFS, ionogrammes…) sous forme de rapports PDF, puis de les transmettre instantanément aux apprenants via le réseau local.
 
 ---
 
-## Description
+## 🎯 Pourquoi SimuLink ?
 
-SimuLink est un outil léger qui permet à des formateurs de générer des rapports PDF simulés et de les publier instantanément sur le réseau local pour les apprenants.
+En simulation médicale, le réalisme est essentiel. Les apprenants doivent pouvoir recevoir et interpréter des résultats de laboratoire comme ils le feraient en situation réelle — au bon moment, dans un format crédible.
 
----
+Avant SimuLink, ces résultats étaient souvent distribués sur papier, préparés à l'avance, sans possibilité de les adapter en temps réel au scénario en cours. SimuLink change ça :
 
-## Prérequis
-
-- **Node.js** ≥ 16.x  
-- **npm** ≥ 8.x  
-- **Python** ≥ 3.8  
-- **pip**  
-- **Git**
-
-> **Vérification :**  
-> ```bash
-> node -v    # ex. v18.16.0  
-> npm -v     # ex. 9.5.1  
-> python --version  # ex. Python 3.11.2  
-> ```
+- **Le formateur** remplit un formulaire depuis l'application mobile, personnalise les valeurs biologiques selon le scénario clinique, et génère un PDF en un clic.
+- **L'apprenant** reçoit le résultat en temps réel sur son appareil, comme s'il venait du laboratoire de l'hôpital.
+- **Le scénario** gagne en réalisme et en fluidité, sans interruption ni papier.
 
 ---
 
-## Installation
+## ✨ Fonctionnalités
 
-1. **Cloner le dépôt**  
-   ```bash
-   git clone https://github.com/021user/SimuLink.git
-   cd SimuLink
-   git checkout VersionFinal
+- 📄 Génération de rapports PDF réalistes (NFS, ionogramme, bilan hépatique…)
+- 📡 Transfert instantané sur le réseau local via un serveur Flask
+- 📱 Application mobile cross-platform (iOS / Android) via Expo
+- 🎛️ Interface formateur intuitive pour paramétrer chaque résultat
+- 📥 Réception en temps réel côté apprenant
+- 🔓 100% open source — adaptez-le à vos besoins
+
+---
+
+## 🚀 Installation & Lancement
+
+L'installation est simple. Clonez, installez, lancez.
+
+### Prérequis
+
+- Node.js `≥ 16` · npm `≥ 8`
+- Python `≥ 3.8` · pip
+- Git
+- [Expo Go](https://expo.dev/client) sur votre téléphone
+
+### Installation
+
+```bash
+# Cloner le projet
+git clone https://github.com/021user/SimuLink.git
+cd SimuLink
+
+# Installer les dépendances front
+npm install
+
+# Installer les dépendances back
+cd backend
+pip install -r requirements.txt
 ```
 
-2. **Nettoyer d’anciennes dépendances**
+### Configuration réseau
 
-   ```bash
-   rm -rf node_modules package-lock.json
-   ```
-3. **Installer les dépendances JavaScript**
-
-   ```bash
-   npm install
-   ```
-4. **Installer les dépendances Python**
-
-   ```bash
-   cd backend
-   pip install -r requirements.txt
-   ```
-
----
-
-## Configuration
-
-Dans les fichiers `app/(tabs)/explore.tsx` et `app/(tabs)/index.tsx`, ajuster l’adresse IP du serveur :
+Renseignez l'adresse IP de votre machine dans les fichiers `app/(tabs)/explore.tsx` et `app/(tabs)/index.tsx` :
 
 ```typescript
-// Exemple dans explore.tsx
-const SERVER_IP = '192.168.1.42'; // Remplacez par votre IPv4
+const SERVER_IP = '192.168.1.42'; // Remplacez par votre IPv4 locale
 ```
 
-> **Récupérer votre IPv4 :**
->
-> * **Windows** : `ipconfig | findstr IPv4`
-> * **macOS/Linux** : `ifconfig | grep inet`
+> **Trouver son IPv4 :**
+> - Windows → `ipconfig | findstr IPv4`
+> - macOS / Linux → `ifconfig | grep inet`
 
----
-
-## Lancement
-
-### Serveur Python
+### Lancement
 
 ```bash
+# Terminal 1 — Démarrer le serveur
 cd backend
 python server.py
-```
 
-> Si un module manque :
->
-> ```bash
-> pip install flask
-> ```
-
-### Application mobile
-
-Ouvrir un autre terminal :
-
-```bash
-cd ../
+# Terminal 2 — Démarrer l'application
+cd SimuLink
 npx expo start -c
 ```
 
-* Scannez le QR code avec l’app Expo sur votre téléphone, ou lancez l’émulateur.
+Scannez le QR code affiché avec l'application Expo Go sur votre téléphone. C'est prêt.
 
 ---
 
-## Structure du projet
+## 🗂️ Structure du projet
 
 ```
 SimuLink/
 ├── backend/
-│   ├── server.py
-│   ├── requirements.txt
-│   └── output/             # Rapports PDF générés
+│   ├── server.py              # Serveur API Flask
+│   ├── requirements.txt       # Dépendances Python
+│   └── output/                # Dossier des PDFs générés
 ├── app/
-│   ├── (tabs)/
-│   │   ├── explore.tsx
-│   │   └── index.tsx
-│   └── assets/
-├── README.md
-└── package.json
+│   └── (tabs)/
+│       ├── index.tsx           # Interface Formateur
+│       └── explore.tsx         # Interface Apprenant
+├── package.json
+└── README.md
 ```
 
 ---
 
-## Exemples concrets
+## 🧪 Utilisation
 
-1. **Générer un rapport**
+### Côté Formateur
 
-   ```bash
-   # Dans l’interface Formateur :
-   # Remplissez le formulaire “NFS” puis cliquez sur Générer
-   ```
+1. Ouvrez l'application et accédez à l'onglet **Formateur**
+2. Sélectionnez le type d'examen (NFS, ionogramme…)
+3. Remplissez les valeurs biologiques selon votre scénario clinique
+4. Cliquez sur **Générer** — le PDF est créé dans `backend/output/`
+5. Activez **Publier** pour l'envoyer aux apprenants
 
-   Résultat : création de `Patient123_2025-05-08.pdf` dans `backend/output/`
+### Côté Apprenant
 
-2. **Publier un rapport**
-
-   ```bash
-   # Activez le switch “Publier” dans l’app Formateur
-   ```
-
-   Les apprenants voient immédiatement le PDF dans l’onglet Réception.
+1. Ouvrez l'application et accédez à l'onglet **Réception**
+2. Les résultats publiés par le formateur apparaissent en temps réel
+3. Consultez le PDF directement depuis l'application
 
 ---
 
-## Contributeurs
+## 🏛️ Contexte de développement
 
-* Iyad GUESBA
-* Kirankumar KICHENASSAMY
+SimuLink a été développé au sein d'**iLumens**, le centre de simulation en santé de l'**Université Paris Cité**. Ce projet est né du besoin concret des formateurs de disposer d'un outil numérique simple et flexible pour intégrer des résultats biologiques réalistes dans leurs scénarios de simulation.
+
+Le projet est **open source** : vous êtes libres de l'utiliser, le modifier et le redistribuer. Si vous l'utilisez dans votre centre de simulation, n'hésitez pas à nous le faire savoir !
 
 ---
+
+## 👥 Contributeurs
+
+- **Iyad Guesba**
+- **Kirankumar Kichenassamy**
+
+---
+
+## 📝 Licence
+
+Ce projet est open source. Le choix de la licence est en cours de finalisation. En attendant, vous êtes libre de consulter, utiliser et contribuer au code.
+
+---
+
+> *SimuLink — Développé chez iLumens, Université Paris Cité.*
