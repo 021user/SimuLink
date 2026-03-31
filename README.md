@@ -37,51 +37,12 @@ L'installation est simple. Clonez, installez, lancez.
 
 - Node.js `≥ 16` · npm `≥ 8`
 - Python `≥ 3.8` · pip
-- Git
-- [Expo Go](https://expo.dev/client) sur votre téléphone
-
+  
 ### Installation
 
 ```bash
-# Cloner le projet
-git clone https://github.com/021user/SimuLink.git
-cd SimuLink
-
-# Installer les dépendances front
-npm install
-
-# Installer les dépendances back
-cd backend
-pip install -r requirements.txt
+lancer le fichier start.bat qui vous donnera toutes les indications pour installer et lancer le logiciel  
 ```
-
-### Configuration réseau
-
-Renseignez l'adresse IP de votre machine dans les fichiers `app/(tabs)/explore.tsx` et `app/(tabs)/index.tsx` :
-
-```typescript
-const SERVER_IP = '192.168.1.42'; // Remplacez par votre IPv4 locale
-```
-
-> **Trouver son IPv4 :**
-> - Windows → `ipconfig | findstr IPv4`
-> - macOS / Linux → `ifconfig | grep inet`
-
-### Lancement
-
-```bash
-# Terminal 1 — Démarrer le serveur
-cd backend
-python server.py
-
-# Terminal 2 — Démarrer l'application
-cd SimuLink
-npx expo start -c
-```
-
-Scannez le QR code affiché avec l'application Expo Go sur votre téléphone. C'est prêt.
-
----
 
 ## 🗂️ Structure du projet
 
@@ -108,8 +69,8 @@ SimuLink/
 1. Ouvrez l'application et accédez à l'onglet **Formateur**
 2. Sélectionnez le type d'examen (NFS, ionogramme…)
 3. Remplissez les valeurs biologiques selon votre scénario clinique
-4. Cliquez sur **Générer** — le PDF est créé dans `backend/output/`
-5. Activez **Publier** pour l'envoyer aux apprenants
+4. Cliquez sur **Générer** — le PDF est créé dans le dossier patient
+5. Cochez **Publier** pour l'envoyer aux apprenants
 
 ### Côté Apprenant
 
@@ -130,7 +91,6 @@ Le projet est **open source** : vous êtes libres de l'utiliser, le modifier et 
 ## 👥 Contributeurs
 
 - **Iyad Guesba**
-- **Kirankumar Kichenassamy**
 
 ---
 
